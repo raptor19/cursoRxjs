@@ -1,53 +1,38 @@
-import { Observable, Observer, Subject } from 'rxjs';
+import { range, fromEvent } from 'rxjs';
+import { map, pluck } from 'rxjs/operators'; 
 
-// Este es el observer
+// defino un dos observables range de 5 valores
 
-const observer: Observer<any> = {
-    next: value => console.log('siguiente: ', value),
-    error: error => console.log('error: ',error),
-    complete: () => console.info('completado: ')
-};
+// el observable emite los valore multiplicados por 10
 
-// Este es el observable
+range(1,5).pipe(
+    map<number,number>( val => {
+        return val * 10
+    }) 
+).subscribe(console.log)
 
-const intervalos$ = new Observable<number>( subscriber => {
-   let num = 0;
-    const interval = setInterval( () => { 
-        num = Math.random();
-            subscriber.next(num); 
-            },2500);
-    // devuelvo una funcion
-    return () => {
-       clearInterval(interval);
-   }
-});
+//el observable emite los valores multiplicados por 10 como texto
 
+range(1,5).pipe(
+    map<number,string>( val => {
+        return (val * 10).toString()
+    }) 
+).subscribe(console.log)
 
-/* Creo un Subject 
-Caracteristicas:
-    1-Casteo Multiple: Muchas subscripciones van a estar sujetas a este subject u Observable y sirve para distribuir la misma informacion a todos.
-    2-Es un Observer
-    3-Se maneja el next,error y complete
-*/
+// Defino un observable fromEvent para capturar el keyup de una tecla
 
+const keyup$ = fromEvent<KeyboardEvent>( document,'keyup');
+keyup$.subscribe( val => console.log( 'map', val ));
 
-const subject$ = new Subject();
-intervalos$.subscribe(subject$);
+// filtro el observable con map
 
-// Me subscribo al subject
+const keyupCode$ = keyup$.pipe(map( event => event.code ))
+keyupCode$.subscribe( code => console.log('map',code));
 
-const subs1 = subject$.subscribe( observer );
-const subs2 = subject$.subscribe( observer );
+// filtro el observable con pluck
 
-
-// Me des-suscribo al observer despues de 7 seg
-
-
-setTimeout(() => { 
-    subject$.next(10);
-    subject$.complete();
-},7000);
-
+const keyupPluck$ = keyup$.pipe(pluck( 'target', 'baseURI'));
+keyupPluck$.subscribe( code => console.log('pluck',code));
 
 
 
